@@ -1,0 +1,11 @@
+.cpli-wrap { max-width: 1200px; }
+.cpli-wrap > p { max-width: 90ch; }
+.cpli-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
+.cpli-table { overflow-x: auto; }
+.cpli-table table { min-width: 680px; }
+.cpli-table td { overflow-wrap: anywhere; vertical-align: top; }
+.cpli-table th:nth-child(1) { width: 20%; }
+.cpli-table th:nth-child(2) { width: 10%; }
+.cpli-table th:nth-child(3) { width: 25%; }
+#cpli-status span { display: block; }
+.cpli-table td div + div { margin-top: 4px; }
