@@ -30,6 +30,45 @@ class CPLI_Inspector {
 		);
 	}
 
+	/** Short, translatable names of the checks for badges and the chart.
+	 * @return array Rule map.
+	 */
+	public static function labels() {
+		return array(
+			'duplicate' => __( 'Repeated parameter', 'campaign-link-inspector' ),
+			'empty'     => __( 'Empty value', 'campaign-link-inspector' ),
+			'case'      => __( 'Parameter name case', 'campaign-link-inspector' ),
+			'valuecase' => __( 'Uppercase source/medium', 'campaign-link-inspector' ),
+			'missing'   => __( 'Incomplete set', 'campaign-link-inspector' ),
+			'internal'  => __( 'Same-host link', 'campaign-link-inspector' ),
+			'space'     => __( 'Whitespace', 'campaign-link-inspector' ),
+			'encoding'  => __( 'Broken encoding', 'campaign-link-inspector' ),
+			'fragment'  => __( 'Parameters in fragment', 'campaign-link-inspector' ),
+			'sensitive' => __( 'Possible personal data', 'campaign-link-inspector' ),
+			'limit'     => __( 'Partly inspected', 'campaign-link-inspector' ),
+		);
+	}
+
+	/** Display group of each check: "check" (likely broken), "review" (naming) or "hint" (recommendation, scope).
+	 * Only used for colors and order in the report; the checks themselves are unchanged.
+	 * @return array Rule map.
+	 */
+	public static function kinds() {
+		return array(
+			'sensitive' => 'check',
+			'encoding'  => 'check',
+			'fragment'  => 'check',
+			'duplicate' => 'check',
+			'empty'     => 'check',
+			'space'     => 'review',
+			'case'      => 'review',
+			'valuecase' => 'review',
+			'internal'  => 'review',
+			'missing'   => 'hint',
+			'limit'     => 'hint',
+		);
+	}
+
 	/** Inspect a single href.
 	 * @param string $href Decoded HTML attribute.
 	 * @param string $home Site base URL.

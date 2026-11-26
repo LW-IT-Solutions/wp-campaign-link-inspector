@@ -4,7 +4,7 @@ Tags: analytics, campaign, utm, links, marketing
 Requires at least: 6.2
 Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 0.1.1
+Stable tag: 0.2.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,15 @@ files is sufficient; manually downloaded CSV files remain wherever they were sav
 1. Scan report under Tools > Campaign Links: each finding names the content item, the link position and a review hint. Query values are omitted from the report.
 
 == Changelog ==
+
+= 0.2.0 =
+* The report opens with summary tiles for the batch: content items, links, links with findings and incomplete scans.
+* New chart "Findings by check" with the count per check; selecting a check filters the table.
+* Every finding carries a short colored label of its check, followed by the full explanation.
+* Clear empty, loading, success and error states with WordPress admin notices.
+* Scope, limits and privacy are in an expandable section; the key facts are shown as short badges.
+* On narrow screens the table turns into stacked cards and the buttons are at least 40 px high.
+* The checks, the content that is read and the CSV export are unchanged.
 
 = 0.1.1 =
 * Changelog wording.
