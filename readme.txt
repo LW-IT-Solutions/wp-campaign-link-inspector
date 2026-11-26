@@ -4,7 +4,7 @@ Tags: analytics, campaign, utm, links, marketing
 Requires at least: 6.2
 Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,5 +81,8 @@ files is sufficient; manually downloaded CSV files remain wherever they were sav
 
 == Changelog ==
 
+= 0.1.1 =
+* Changelog wording.
+
 = 0.1.0 =
-* First installable prototype: bounded read-only content checks and local CSV export.
+* First release: read-only checks of campaign links in posts and pages, batch report and local CSV export.

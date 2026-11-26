@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Campaign Link Inspector
  * Description: Inspect campaign links in WordPress posts and pages without visitor tracking or external requests.
- * Version: 0.1.0
+ * Version: 0.1.1
  * Requires at least: 6.2
  * Requires PHP: 7.4
  * Author: LW IT Solutions
