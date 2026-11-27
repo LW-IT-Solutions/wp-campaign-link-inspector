@@ -136,6 +136,46 @@ class CPLI_Inspector {
 		return array_values( array_unique( $issues ) );
 	}
 
+	/** State of the five standard UTM fields of a link, for the field matrix of the report.
+	 * Only states are returned, never parameter values.
+	 * @param string $href Decoded HTML attribute.
+	 * @return array Field name => "ok", "empty", "missing" or "issue"; empty when the link has no UTM parameter.
+	 */
+	public static function fields( $href ) {
+		$parts = wp_parse_url( trim( $href ) );
+		if ( false === $parts || empty( $parts['query'] ) ) {
+			return array();
+		}
+		$seen = array();
+		foreach ( explode( '&', $parts['query'] ) as $pair ) {
+			if ( '' === $pair ) {
+				continue;
+			}
+			$pieces = explode( '=', $pair, 2 );
+			$key    = urldecode( $pieces[0] );
+			$value  = urldecode( isset( $pieces[1] ) ? $pieces[1] : '' );
+			$lower  = strtolower( $key );
+			if ( 0 !== strpos( $lower, 'utm_' ) ) {
+				continue;
+			}
+			$name  = substr( $lower, 4 );
+			$state = '' === trim( $value ) ? 'empty' : 'ok';
+			if ( 'ok' === $state && ( $key !== $lower || $value !== trim( $value ) || preg_match( '/[\x00-\x1f\x7f]/', $value ) || preg_match( '/%(?![0-9a-f]{2})/i', $pair ) || ( in_array( $name, array( 'source', 'medium' ), true ) && preg_match( '/[A-Z]/', $value ) ) ) ) {
+				$state = 'issue';
+			}
+			// A repeated parameter is an issue of that field, whatever its values are.
+			$seen[ $name ] = isset( $seen[ $name ] ) ? 'issue' : $state;
+		}
+		if ( ! $seen ) {
+			return array();
+		}
+		$out = array();
+		foreach ( array( 'source', 'medium', 'campaign', 'term', 'content' ) as $name ) {
+			$out[ $name ] = isset( $seen[ $name ] ) ? $seen[ $name ] : 'missing';
+		}
+		return $out;
+	}
+
 	/** Remove every query value, userinfo and fragment from the report URL.
 	 * @param string $href Source URL.
 	 * @return string Non-clickable display value; path may still be sensitive.
@@ -183,6 +223,7 @@ class CPLI_Inspector {
 					$result['rows'][] = array(
 						'position' => $result['links'],
 						'url'      => self::report_url( $href ),
+						'fields'   => self::fields( $href ),
 						'codes'    => $issues,
 						'messages' => array_values( array_intersect_key( self::rules(), array_flip( $issues ) ) ),
 					);

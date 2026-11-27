@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Campaign Link Inspector
  * Description: Inspect campaign links in WordPress posts and pages without visitor tracking or external requests.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Requires at least: 6.2
  * Requires PHP: 7.4
  * Author: LW IT Solutions
@@ -17,7 +17,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-define( 'CPLI_VERSION', '0.2.0' );
+define( 'CPLI_VERSION', '0.3.0' );
 require_once __DIR__ . '/includes/class-cpli-inspector.php';
 
 add_action( 'admin_menu', 'cpli_admin_menu' );
@@ -70,6 +70,30 @@ function cpli_admin_assets( $hook ) {
 				'colPosition' => __( 'Link position', 'campaign-link-inspector' ),
 				'colUrl'      => __( 'URL (query values omitted)', 'campaign-link-inspector' ),
 				'colFinding'  => __( 'Finding', 'campaign-link-inspector' ),
+				'kindCheck'   => __( 'Likely broken', 'campaign-link-inspector' ),
+				'kindReview'  => __( 'Naming to review', 'campaign-link-inspector' ),
+				'kindHint'    => __( 'Recommendation or scope', 'campaign-link-inspector' ),
+				'kindClean'   => __( 'Without findings', 'campaign-link-inspector' ),
+				/* translators: 1: number of links, 2: share in percent, 3: group name such as "Likely broken". */
+				'ringPart'    => __( '%3$s: %1$d (%2$d %%)', 'campaign-link-inspector' ),
+				/* translators: %d: share of links without findings in percent. */
+				'ringCenter'  => __( '%d %% without findings', 'campaign-link-inspector' ),
+				'ringClean'   => __( 'clean', 'campaign-link-inspector' ),
+				'ringFilter'  => __( 'Select a colored part to show only its rows.', 'campaign-link-inspector' ),
+				/* translators: %d: number of matching rows. */
+				'matches'     => __( 'Matching rows: %d', 'campaign-link-inspector' ),
+				'noMatch'     => __( 'No row matches the filter.', 'campaign-link-inspector' ),
+				'fieldOk'     => __( 'set', 'campaign-link-inspector' ),
+				'fieldEmpty'  => __( 'empty', 'campaign-link-inspector' ),
+				'fieldMiss'   => __( 'missing', 'campaign-link-inspector' ),
+				'fieldIssue'  => __( 'to review', 'campaign-link-inspector' ),
+				'fieldsLabel' => __( 'UTM fields of this link', 'campaign-link-inspector' ),
+				/* translators: 1: batch number, 2: content items, 3: links, 4: links with findings. */
+				'histBar'     => __( 'Batch %1$d (items: %2$d, links: %3$d, with findings: %4$d). Select to read this batch again.', 'campaign-link-inspector' ),
+				/* translators: 1: number of batches, 2: content items, 3: links, 4: links with findings. */
+				'histSum'     => __( 'Batches read on this page: %1$d (items: %2$d, links: %3$d, with findings: %4$d).', 'campaign-link-inspector' ),
+				'histEnd'     => __( 'End of the content list reached.', 'campaign-link-inspector' ),
+				'clean'       => __( 'No findings in this batch.', 'campaign-link-inspector' ),
 			),
 		)
 	);
@@ -108,13 +132,36 @@ function cpli_admin_page() {
 		</div>
 		<div id="cpli-status" class="cpli-status" role="status" aria-live="polite"></div>
 		<div class="cpli-empty" id="cpli-empty">
-			<span class="dashicons dashicons-chart-bar" aria-hidden="true"></span>
+			<svg class="cpli-illu" viewBox="0 0 160 110" width="160" height="110" aria-hidden="true" focusable="false">
+				<rect class="cpli-illu-page" x="22" y="8" width="84" height="94" rx="6"/>
+				<rect class="cpli-illu-line" x="34" y="24" width="54" height="6" rx="3"/>
+				<rect class="cpli-illu-line" x="34" y="38" width="40" height="6" rx="3"/>
+				<rect class="cpli-illu-link" x="34" y="52" width="58" height="6" rx="3"/>
+				<rect class="cpli-illu-line" x="34" y="66" width="48" height="6" rx="3"/>
+				<rect class="cpli-illu-link" x="34" y="80" width="30" height="6" rx="3"/>
+				<circle class="cpli-illu-lens" cx="104" cy="58" r="22"/>
+				<path class="cpli-illu-handle" d="M120 74 L140 94"/>
+				<path class="cpli-illu-check" d="M94 58 l7 7 l13 -14"/>
+			</svg>
 			<h2><?php esc_html_e( 'No scan yet', 'campaign-link-inspector' ); ?></h2>
 			<p><?php esc_html_e( 'Start the scan to read the first 10 posts and pages. Each batch lists every link with a finding, a short label for the check and an edit link. Continue batch by batch until the end of the content list.', 'campaign-link-inspector' ); ?></p>
 		</div>
 		<section class="cpli-report" id="cpli-report" hidden aria-labelledby="cpli-report-title">
 			<h2 id="cpli-report-title" class="screen-reader-text"><?php esc_html_e( 'Scan report', 'campaign-link-inspector' ); ?></h2>
 			<dl class="cpli-tiles" id="cpli-tiles"></dl>
+			<div class="cpli-success" id="cpli-success" hidden>
+				<svg viewBox="0 0 52 52" width="44" height="44" aria-hidden="true" focusable="false"><circle cx="26" cy="26" r="23"/><path d="M15 27 l8 8 l15 -16"/></svg>
+				<p id="cpli-success-text"></p>
+			</div>
+			<div class="cpli-overview">
+			<div class="cpli-ring-card" id="cpli-ring-card" hidden>
+				<h3><?php esc_html_e( 'Links in this batch', 'campaign-link-inspector' ); ?></h3>
+				<p class="description" id="cpli-ring-help"></p>
+				<div class="cpli-ring-body">
+					<div class="cpli-ring" id="cpli-ring"></div>
+					<ul class="cpli-ring-legend" id="cpli-ring-legend"></ul>
+				</div>
+			</div>
 			<div class="cpli-chart" id="cpli-chart" hidden>
 				<h3><?php esc_html_e( 'Findings by check', 'campaign-link-inspector' ); ?></h3>
 				<p class="description"><?php esc_html_e( 'Select a check to show only its rows.', 'campaign-link-inspector' ); ?></p>
@@ -125,6 +172,24 @@ function cpli_admin_page() {
 					<li class="is-hint"><?php esc_html_e( 'Recommendation or scope', 'campaign-link-inspector' ); ?></li>
 				</ul>
 				<p class="cpli-filter-line" id="cpli-filter-line" hidden><span id="cpli-filter-text"></span> <button type="button" class="button-link" id="cpli-filter-reset"><?php esc_html_e( 'Show all findings', 'campaign-link-inspector' ); ?></button></p>
+			</div>
+			</div>
+			<div class="cpli-history" id="cpli-history" hidden>
+				<h3><?php esc_html_e( 'Scan progress', 'campaign-link-inspector' ); ?></h3>
+				<p class="description"><?php esc_html_e( 'Each column is one batch read on this page, colored by findings. Nothing is saved; reloading the page starts over.', 'campaign-link-inspector' ); ?></p>
+				<ol class="cpli-history-bars" id="cpli-history-bars"></ol>
+				<p class="cpli-history-sum" id="cpli-history-sum"></p>
+			</div>
+			<div class="cpli-tools" id="cpli-tools" hidden>
+				<label class="cpli-search">
+					<span class="screen-reader-text"><?php esc_html_e( 'Filter the findings by title or address', 'campaign-link-inspector' ); ?></span>
+					<span class="dashicons dashicons-filter" aria-hidden="true"></span>
+					<input type="search" id="cpli-search" placeholder="<?php esc_attr_e( 'Filter by title or address', 'campaign-link-inspector' ); ?>" aria-describedby="cpli-search-hint" autocomplete="off">
+					<kbd aria-hidden="true">/</kbd>
+				</label>
+				<span class="screen-reader-text" id="cpli-search-hint"><?php esc_html_e( 'Press the slash key to jump to this field.', 'campaign-link-inspector' ); ?></span>
+				<div class="cpli-kinds" id="cpli-kinds" role="group" aria-label="<?php esc_attr_e( 'Show findings of one group', 'campaign-link-inspector' ); ?>"></div>
+				<p class="cpli-matches" id="cpli-matches" role="status" aria-live="polite"></p>
 			</div>
 			<div class="cpli-table" id="cpli-table" hidden>
 				<table class="widefat striped">

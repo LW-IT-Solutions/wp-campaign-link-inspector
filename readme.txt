@@ -4,7 +4,7 @@ Tags: analytics, campaign, utm, links, marketing
 Requires at least: 6.2
 Tested up to: 7.2
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,15 @@ files is sufficient; manually downloaded CSV files remain wherever they were sav
 1. Scan report under Tools > Campaign Links: each finding names the content item, the link position and a review hint. Query values are omitted from the report.
 
 == Changelog ==
+
+= 0.3.0 =
+* New ring chart "Links in this batch": links without findings and links by their most serious group, with tooltips on hover and keyboard focus; selecting a part filters the table.
+* Every finding shows a field matrix for utm_source, utm_medium, utm_campaign, utm_term and utm_content (set, empty, missing, to review). Only states are shown, never values.
+* Filter field above the table with highlighted matches in titles and addresses, group chips with counts and the "/" shortcut.
+* New "Scan progress" strip: one column per batch read on the page, colored by findings; selecting a column reads that batch again. Nothing is saved.
+* Numbers count up, the empty state has an illustration and a batch without findings shows a short confirmation. With reduced motion everything appears at once.
+* Addresses in the report break only after "/", "?", "&" or "=" and all have the same code style.
+* The checks, the data that is read and the CSV export are unchanged.
 
 = 0.2.0 =
 * The report opens with summary tiles for the batch: content items, links, links with findings and incomplete scans.
